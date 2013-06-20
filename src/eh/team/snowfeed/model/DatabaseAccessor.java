@@ -76,6 +76,20 @@ public class DatabaseAccessor extends SQLiteOpenHelper {
 		
 		return _user;
 	}
+	
+	public int getUser(String username, String password)
+	{
+		SQLiteDatabase database = this.getReadableDatabase();
+		Cursor cursor = database.rawQuery("SELECT * FROM "+Table_USERS+" WHERE "+USERNAME+" ="+username.trim()+" AND"+PASSWORD+" ="+password.trim(), null);
+		cursor.moveToFirst();
+		
+		int count = cursor.getCount();
+		cursor.close();
+		
+		return count;
+		
+	}
+	
 	public List<user> getAllUsers()
 	{
 		List<user> usersList = new ArrayList<user>();
@@ -131,11 +145,12 @@ public class DatabaseAccessor extends SQLiteOpenHelper {
 		database.delete(Table_USERS, KEY_ID+" ? ", new String[]{String.valueOf(_user.getId())});
 		database.close();
 	}
-	public int Login(user _user,boolean remember)
+	public void Login(user _user,boolean remember)
 	{
 		Time now = new Time();
 		now.setToNow();
-		
+	if(getUser(_user.username, _user.password)>0)
+	{
 		SQLiteDatabase database= this.getWritableDatabase();
 		ContentValues values = new ContentValues();
 		
@@ -144,11 +159,9 @@ public class DatabaseAccessor extends SQLiteOpenHelper {
 		values.put(H_DATE, now.toString());
 		values.put(H_REMEMBER, remember);
 		
-		 if (database.insert(Table_Login_History, null, values)>0)
-			 return 0;
-			 else
-				 return 1;
-		
+		 database.insert(Table_Login_History, null, values);
+			 
+	}	
 	}
 	
 	
