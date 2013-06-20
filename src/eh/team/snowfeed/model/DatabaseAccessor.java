@@ -1,5 +1,7 @@
 package eh.team.snowfeed.model;
 
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,19 +10,27 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.text.format.Time;
 
 public class DatabaseAccessor extends SQLiteOpenHelper {
 	
 	private static final int DATABASE_VERSION= 1;
 	private static final String DATABASE_NAME = "SnowFeedDB";
 	private static final String Table_USERS = "UsersTbl";
-	
-	//table columns
+	private static final String Table_Login_History = "LoginHistory";
+	//table columns USERS
 	private static final String KEY_ID = "id";
 	private static final String USERNAME = "username";
 	private static final String PASSWORD = "password";
 	private static final String EMAIL = "email";
 	private static final String PHONE = "phone";
+	
+	//table columns LOGIN HISTORY
+	private static final String HKEY_ID = "Id";
+	private static final String H_USERNAME = "username";
+	private static final String H_USERID = "UserId";
+	private static final String H_DATE = "loginDate";
+	private static final String H_REMEMBER = "remeber";
 	
 	public DatabaseAccessor(Context context)
 	{
@@ -33,6 +43,9 @@ public class DatabaseAccessor extends SQLiteOpenHelper {
 	+USERNAME+" TEXT,"+PASSWORD+" TEXT,"+EMAIL+" TEXT,"+PHONE+" TEXT"+")";
 		database.execSQL(CREATE_USERS_TABLE_QUERY);
 		
+		String CREATE_LOGIN_HISTORY_TABLE_QUERY = "CREATE TABLE "+Table_Login_History+ " ("+HKEY_ID+" INTEGER PRIMARY KEY,"
+				+H_USERNAME+" TEXT,"+H_DATE+" TEXT,"+H_REMEMBER+" INTEGER,"+H_USERID+" INTEGER";
+		database.execSQL(CREATE_LOGIN_HISTORY_TABLE_QUERY);
 	}
 
 	@Override
@@ -118,5 +131,25 @@ public class DatabaseAccessor extends SQLiteOpenHelper {
 		database.delete(Table_USERS, KEY_ID+" ? ", new String[]{String.valueOf(_user.getId())});
 		database.close();
 	}
+	public int Login(user _user,boolean remember)
+	{
+		Time now = new Time();
+		now.setToNow();
+		
+		SQLiteDatabase database= this.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		
+		values.put(H_USERNAME,_user.username);
+		values.put(H_USERID, _user.id);
+		values.put(H_DATE, now.toString());
+		values.put(H_REMEMBER, remember);
+		
+		 if (database.insert(Table_Login_History, null, values)>0)
+			 return 0;
+			 else
+				 return 1;
+		
+	}
+	
 	
 }
